@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "alwaysStrict": false,
+    "target": "es5",
+    "module": "none",
+    "strict": true,
+    "outFile": "temp/api.js",
+    "noImplicitUseStrict": true
+  },
+  "include": [
+    "src/ts/*"
+  ]
+}

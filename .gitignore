@@ -1,0 +1,6 @@
+cache/
+deps/
+temp/
+debug/
+dist/
+node_modules/

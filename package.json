@@ -1,0 +1,16 @@
+{
+  "name": "sqlite-wasm",
+  "version": "0.1.0",
+  "description": "SQLite compiled to WebAssembly",
+  "main": "index.js",
+  "scripts": {
+    "build": "make",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/emscripten": "0.0.30",
+    "typescript": "^2.5.2"
+  }
+}
