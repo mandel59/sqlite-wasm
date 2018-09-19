@@ -10,7 +10,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@types/emscripten": "0.0.30",
+    "@types/emscripten": "0.0.31",
     "typescript": "^2.5.2"
   }
 }

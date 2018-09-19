@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "alwaysStrict": false,
-    "target": "es5",
+    "target": "es6",
     "module": "none",
     "strict": true,
     "outFile": "temp/api.js",

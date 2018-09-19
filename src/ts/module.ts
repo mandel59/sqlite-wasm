@@ -13,19 +13,9 @@ namespace Module {
     export declare function UTF8ToString(ptr: ptr<string>): string
     export declare function stringToUTF8(str: string, outPtr: ptr<string>, maxBytesToWrite: number): void
 
-    export const stackSave
-        : () => stack
-        = Module["Runtime"].stackSave
-    export const stackRestore
-        : (stack: stack) => void
-        = Module["Runtime"].stackRestore
-    export const stackAlloc
-        : <T extends sized>(size: number & T["__size__"]) => ptr<T>
-        = Module["Runtime"].stackAlloc
-    export const addFunction
-        : <T extends Function>(func: T) => ptr<T>
-        = Module["Runtime"].addFunction
-    export const removeFunction
-        : <T extends Function>(ptr: ptr<T>) => void
-        = Module["Runtime"].removeFunction
+    export declare function stackSave(): stack;
+    export declare function stackRestore(stack: stack): void;
+    export declare function stackAlloc<T extends sized>(size: number & T["__size__"]): ptr<T>;
+    export declare function addFunction<T extends Function>(func: T): ptr<T>;
+    export declare function removeFunction<T extends Function>(ptr: ptr<T>): void;
 }

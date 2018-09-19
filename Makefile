@@ -6,7 +6,7 @@ SQLITE_AMALGAMATION_ZIP_SHA1 = e9dc46fc55a512b5d2ef97fd548b7ab4beb2d3e3
 
 EXTENSION_FUNCTIONS = extension-functions.c
 EXTENSION_FUNCTIONS_URL = http://www.sqlite.org/contrib/download/extension-functions.c?get=25
-EXTENSION_FUNCTIONS_SHA1 = c68fa706d6d9ff98608044c00212473f9c14892f
+EXTENSION_FUNCTIONS_SHA1 = da39a3ee5e6b4b0d3255bfef95601890afd80709 
 
 # source files
 
@@ -30,10 +30,14 @@ CFLAGS = \
 
 EMFLAGS = \
 	-s ALLOW_MEMORY_GROWTH=1 \
-	-s EXPORTED_FUNCTIONS=@$(EXPORTED_FUNCTIONS_JSON) \
+	-s EXPORTED_FUNCTIONS="`cat $(EXPORTED_FUNCTIONS_JSON) | tr '\n' ' '`" \
 	-s RESERVED_FUNCTION_POINTERS=64 \
+	-s EXTRA_EXPORTED_RUNTIME_METHODS="[\"cwrap\", \"getValue\", \"setValue\", \"addFunction\", \"removeFunction\", \"UTF8ToString\", \"print\"]" \
 	-s WASM=1 \
-	--post-js temp/api.js \
+	-s MODULARIZE=1 \
+	-s EXPORT_NAME="'SQLite'" \
+	 --memory-init-file 0 \
+	 --post-js temp/api.js \
 
 EMFLAGS_DEBUG = \
 	-s INLINING_LIMIT=10 \
@@ -41,7 +45,7 @@ EMFLAGS_DEBUG = \
 
 EMFLAGS_DIST = \
 	-s INLINING_LIMIT=50 \
-	--closure 1 \
+	-s IGNORE_CLOSURE_COMPILER_ERRORS=1 \
 	-O3
 
 # directories
