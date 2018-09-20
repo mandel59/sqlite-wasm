@@ -8,5 +8,17 @@ phases:
   - checkout: self
     clean: true
 
-- bash: make 
-  displayName: 'Run make'
+  - bash: |
+      cd $(Agent.WorkFolder)
+      git clone https://github.com/juj/emsdk.git
+      cd emsdk
+      ./emsdk install latest
+      ./emsdk activate latest
+    displayName: 'Run make'
+
+  - bash: |
+      source $(Agent.WorkFolder)/emsdk/emsdk_env.sh
+      npm -g install typescript
+      npm install
+      make 
+    displayName: 'Run make'
