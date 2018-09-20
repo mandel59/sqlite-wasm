@@ -12,7 +12,7 @@ namespace Module {
         = Module["cwrap"]("sqlite3_last_insert_rowid", "number", ["number"])
 
     export const sqlite3_errmsg
-        : (pDb: ptr<sqlite3>) => ptr<string>
+        : (pDb: ptr<sqlite3>) => string
         = Module["cwrap"]("sqlite3_errmsg", "string", ["number"])
 
     export const sqlite3_prepare2
