@@ -20,7 +20,8 @@ phases:
       source $(Agent.WorkFolder)/emsdk/emsdk_env.sh
       npm -g install typescript
       npm install
-      make 
+      make
+      mono src/nuget/nuget.exe pack src/nuget/uno.sqlite-wasm.nuspec -Version "1.0.0-dev.$(Build.BuildId)" -OutputDirectory "$(build.artifactstagingdirectory)"
     displayName: 'Run make'
 
   - task: CopyFiles@2
