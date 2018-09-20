@@ -1,0 +1,12 @@
+phases:
+- phase: Linux
+  variables:
+    NUGET_PACKAGES: $(Agent.WorkFolder)\.nuget
+    NUGET_HTTP_CACHE_PATH: $(Agent.WorkFolder)\.nuget-http-cache
+
+  steps:
+  - checkout: self
+    clean: true
+
+- bash: make 
+  displayName: 'Run make'
