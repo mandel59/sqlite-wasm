@@ -32,14 +32,26 @@ namespace Module {
             this.databaseHandle = databaseHandle as ptr<sqlite3>
         }
 
+        static getLibVersionNumber(): number {
+            return sqlite3_libversion_number();
+        }
+
         public get id(): number {
             return this.databaseHandle as number;
         }
 
-        close(): void {
+        close(): SQLiteResult {
             const code = sqlite3_close_v2(this.databaseHandle)
-            if (code) { throw new SQLiteError(code) }
+
             delete this.databaseHandle
+
+            return code;
+        }
+
+        getErrorMessage(): string {
+            var pStr = sqlite3_errmsg(this.databaseHandle);
+
+            return Module["UTF8ToString"](pStr);
         }
 
         preparev2(sql: string) : Statement {
