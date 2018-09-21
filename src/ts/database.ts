@@ -16,26 +16,25 @@ namespace Module {
         //
         // Database-related apis
         //
-        public static open(data: Uint8Array, options: ConnectionOptions = {}): DatabaseOpenResult {
+        public static open(fileName: string, data: Uint8Array, options: ConnectionOptions = {}): DatabaseOpenResult {
 
             const opts = this.buildOptions(options);
-            const filename = '/dbfile_' + (0xffffffff * Math.random() >>> 0);
-            const uri = `file:${encodeURI(filename)}${opts ? "?" + opts : ""}`
+            const uri = `file:${encodeURI(fileName)}${opts ? "?" + opts : ""}`
 
             if (data) {
-                FS.writeFile(filename, data, { encoding: 'binary', flags: "w" });
+                FS.writeFile(fileName, data, { encoding: 'binary', flags: "w" });
             }
 
             const stack = stackSave()
             const ppDb = stackAlloc<ptr<sqlite3>>(4)
-            const code = sqlite3_open(filename, ppDb)
+            const code = sqlite3_open(uri, ppDb)
             const pDb = Module["getValue"](ppDb, "*")
             stackRestore(stack)
 
             FS.lstat
 
             if (code == 0) {
-                Database.fileMap[pDb] = filename;
+                Database.fileMap[pDb] = fileName;
             }
 
             return new DatabaseOpenResult(pDb as ptr<sqlite3>, code);
