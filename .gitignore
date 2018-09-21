@@ -4,3 +4,7 @@ temp/
 debug/
 dist/
 node_modules/
+/package-lock.json
+/.vs
+bin
+obj

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+	<metadata minClientVersion="3.3.0">
+		<id>Uno.sqlite-wasm</id>
+		<version>1.0.3</version>
+		<title>Uno SQLite for WebAssembly</title>
+		<authors>nventive</authors>
+		<owners>nventive</owners>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<projectUrl>https://github.com/nventive/uno.sqlite-wasm</projectUrl>
+		<iconUrl>https://nv-assets.azurewebsites.net/logos/uno.png</iconUrl>
+		<description>A compilation of the SQLite database engine for WebAssembly</description>
+		<copyright>Copyright (C) 2015-2018 nventive inc. - all rights reserved</copyright>
+		<repository type="git" url="https://github.com/nventive/Uno.sqlite-wasm.git" />
+		
+		<contentFiles>
+			<!-- Include Assets as Embedded Resource and Content so that the Uno.Wasm.Bootstrap picks those up -->
+			<files include="any/any/**/*.js" buildAction="EmbeddedResource" />
+			<files include="any/any/**/*.wasm" buildAction="Content" />
+		</contentFiles>
+	</metadata>
+	<files>
+
+		<file src="../../dist/sqlite3.wasm" target="contentFiles/any/any" />
+		<file src="../../dist/sqlite3.js" target="contentFiles/any/any/WasmScripts" />
+
+	</files>
+</package>
