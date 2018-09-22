@@ -34,7 +34,7 @@ EMFLAGS = \
 	-s RESERVED_FUNCTION_POINTERS=64 \
 	-s EXTRA_EXPORTED_RUNTIME_METHODS="[\"cwrap\", \"getValue\", \"setValue\", \"addFunction\", \"removeFunction\", \"UTF8ToString\", \"print\"]" \
 	-s WASM=1 \
-	-s MODULARIZE=1 \
+	-s MODULARIZE_INSTANCE=1 \
 	-s EXPORT_NAME="'SQLite'" \
 	 --memory-init-file 0 \
 	 --post-js temp/api.js \
