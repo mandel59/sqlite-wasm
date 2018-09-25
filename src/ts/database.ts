@@ -148,6 +148,10 @@ namespace Module {
             return sqlite3_bind_null(pStatement, index);
         }
 
+        static bind_parameter_index(pStatement: ptr<sqlite3>, name: string): number {
+            return sqlite3_bind_parameter_index(pStatement, name);
+        }
+
         static bind_blob(pStatement: ptr<sqlite3>, index: number, value: Uint8Array, length: number): SQLiteResult {
 
             var data = Module._malloc(length);

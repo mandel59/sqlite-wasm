@@ -91,6 +91,10 @@ namespace Module {
         : (pStatement: ptr<sqlite3>, index: number) => SQLiteResult
         = Module["cwrap"]("sqlite3_bind_null", "number", ["number", "number"])
 
+    export const sqlite3_bind_parameter_index
+        : (pStatement: ptr<sqlite3>, name: string) => number
+        = Module["cwrap"]("sqlite3_bind_parameter_index", "number", ["number", "string"])
+
     export const sqlite3_bind_blob
         : (pStatement: ptr<sqlite3>, index: number, value: number, length: number, pCallback: number) => SQLiteResult
         = Module["cwrap"]("sqlite3_bind_blob", "number", ["number", "number", "number", "number", "number"])
