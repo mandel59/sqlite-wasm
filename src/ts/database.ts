@@ -93,6 +93,10 @@ namespace Module {
             return sqlite3_last_insert_rowid(pDb);
         }
 
+        static busy_timeout(pDb: ptr<sqlite3>, ms: number): number {
+            return sqlite3_busy_timeout(pDb, ms);
+        }
+
         //
         // Statement-related apis
         //
@@ -120,6 +124,10 @@ namespace Module {
             return sqlite3_column_type(pStatement, index);
         }
 
+        static column_bytes(pStatement: ptr<sqlite3>, index: number): number {
+            return sqlite3_column_bytes(pStatement, index);
+        }
+
         static bind_text(pStatement: ptr<sqlite3>, index: number, value: string): SQLiteResult {
             return sqlite3_bind_text(pStatement, index, value, -1, <ptr<sqlite3>>-1);
         }
@@ -128,8 +136,8 @@ namespace Module {
             return sqlite3_bind_int(pStatement, index, value);
         }
 
-        static bind_int64(pStatement: ptr<sqlite3>, index: number, value: number): SQLiteResult {
-            return sqlite3_bind_int64(pStatement, index, value);
+        static bind_int64(pStatement: ptr<sqlite3>, index: number, value: Uint8Array): SQLiteResult {
+            return sqlite3_bind_int64ptr(pStatement, index, value);
         }
 
         static bind_double(pStatement: ptr<sqlite3>, index: number, value: number): SQLiteResult {
@@ -140,8 +148,64 @@ namespace Module {
             return sqlite3_bind_null(pStatement, index);
         }
 
+        static bind_parameter_index(pStatement: ptr<sqlite3>, name: string): number {
+            return sqlite3_bind_parameter_index(pStatement, name);
+        }
+
+        static bind_blob(pStatement: ptr<sqlite3>, index: number, value: Uint8Array, length: number): SQLiteResult {
+
+            var data = Module._malloc(length);
+
+            try {
+                for (var i = 0; i < length; i++) {
+                    Module.HEAPU8[data + i] = value[i];
+                }
+
+                return sqlite3_bind_blob(pStatement, index, data, length, -1/* SQLITE_TRANSIENT*/);
+            }
+            finally {
+                Module._free(data);
+            }
+        }
+
         static column_int(pStatement: ptr<sqlite3>, index: number): number {
             return sqlite3_column_int(pStatement, index);
+        }
+
+        static column_double(pStatement: ptr<sqlite3>, index: number): number {
+            return sqlite3_column_double(pStatement, index);
+        }
+
+        static column_int64ptr(pStatement: ptr<sqlite3>, index: number): Uint8Array {
+
+            var data = Module._malloc(8);
+
+            try {
+
+                sqlite3_column_int64ptr(pStatement, index, data);
+
+                var output = new Uint8Array(8);
+                for (var i = 0; i < 8; i++) {
+                    output[i] = Module.HEAPU8[data + i];
+                }
+                return output;
+            }
+            finally {
+                Module._free(data);
+            }
+        }
+
+        static column_blob(pStatement: ptr<sqlite3>, index: number): Uint8Array {
+            var ptr = sqlite3_column_blob(pStatement, index);
+            var size = sqlite3_column_bytes(pStatement, index);
+
+            var output = new Uint8Array(size);
+
+            for (var i = 0; i < size; i ++) {
+                output[i] = Module.HEAPU8[ptr + i];
+            }
+
+            return output;
         }
 
         static column_text(pStatement: ptr<sqlite3>, index: number): string {

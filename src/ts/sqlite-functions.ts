@@ -11,6 +11,10 @@ namespace Module {
         : (pDb: ptr<sqlite3>) => number
         = Module["cwrap"]("sqlite3_last_insert_rowid", "number", ["number"])
 
+    export const sqlite3_busy_timeout
+        : (pDb: ptr<sqlite3>, ms: number) => number
+        = Module["cwrap"]("sqlite3_busy_timeout", "number", ["number", "number"])
+
     export const sqlite3_errmsg
         : (pDb: ptr<sqlite3>) => string
         = Module["cwrap"]("sqlite3_errmsg", "string", ["number"])
@@ -47,9 +51,25 @@ namespace Module {
         : (pStatement: ptr<sqlite3>, index: number) => number
         = Module["cwrap"]("sqlite3_column_int", "number", ["number", "number"])
 
+    export const sqlite3_column_bytes
+        : (pStatement: ptr<sqlite3>, index: number) => number
+        = Module["cwrap"]("sqlite3_column_bytes", "number", ["number", "number"])
+
+    export const sqlite3_column_int64ptr
+        : (pStatement: ptr<sqlite3>, index: number, pOutValue: number) => void
+        = Module["cwrap"]("sqlite3_column_int64ptr", "number", ["number", "number", "number"])
+
+    export const sqlite3_column_double
+        : (pStatement: ptr<sqlite3>, index: number) => number
+        = Module["cwrap"]("sqlite3_column_double", "number", ["number", "number"])
+
     export const sqlite3_column_text
         : (pStatement: ptr<sqlite3>, index: number) => string
         = Module["cwrap"]("sqlite3_column_text", "string", ["number", "number"])
+
+    export const sqlite3_column_blob
+        : (pStatement: ptr<sqlite3>, index: number) => number
+        = Module["cwrap"]("sqlite3_column_blob", "number", ["number", "number"])
 
     export const sqlite3_bind_text
         : (pStatement: ptr<sqlite3>, index: number, val: string, n: number, pFree: ptr<sqlite3>) => SQLiteResult
@@ -59,9 +79,9 @@ namespace Module {
         : (pStatement: ptr<sqlite3>, index: number, val: number) => SQLiteResult
         = Module["cwrap"]("sqlite3_bind_int", "number", ["number", "number", "number"])
 
-    export const sqlite3_bind_int64
-        : (pStatement: ptr<sqlite3>, index: number, val: number) => SQLiteResult
-        = Module["cwrap"]("sqlite3_bind_int64", "number", ["number", "number", "number"])
+    export const sqlite3_bind_int64ptr
+        : (pStatement: ptr<sqlite3>, index: number, val: Uint8Array) => SQLiteResult
+        = Module["cwrap"]("sqlite3_bind_int64ptr", "number", ["number", "number", "array"])
 
     export const sqlite3_bind_double
         : (pStatement: ptr<sqlite3>, index: number, val: number) => SQLiteResult
@@ -70,6 +90,14 @@ namespace Module {
     export const sqlite3_bind_null
         : (pStatement: ptr<sqlite3>, index: number) => SQLiteResult
         = Module["cwrap"]("sqlite3_bind_null", "number", ["number", "number"])
+
+    export const sqlite3_bind_parameter_index
+        : (pStatement: ptr<sqlite3>, name: string) => number
+        = Module["cwrap"]("sqlite3_bind_parameter_index", "number", ["number", "string"])
+
+    export const sqlite3_bind_blob
+        : (pStatement: ptr<sqlite3>, index: number, value: number, length: number, pCallback: number) => SQLiteResult
+        = Module["cwrap"]("sqlite3_bind_blob", "number", ["number", "number", "number", "number", "number"])
 
     export const sqlite3_changes
         : (pStatement: ptr<sqlite3>) => number
