@@ -14,7 +14,7 @@ EXPORTED_FUNCTIONS_JSON = src/exported_functions.json
 
 # temporary files
 
-BITCODE_FILES = temp/bc/sqlite3.bc temp/bc/extension-functions.bc
+BITCODE_FILES = temp/bc/sqlite3.bc temp/bc/extension-functions.bc temp/bc/wasmhelpers.bc
 
 # build options
 
@@ -113,6 +113,10 @@ temp/bc/sqlite3.bc: deps/$(SQLITE_AMALGAMATION) src/c/config.h
 temp/bc/extension-functions.bc: deps/$(EXTENSION_FUNCTIONS) src/c/config.h
 	mkdir -p temp/bc
 	$(EMCC) $(CFLAGS) -s LINKABLE=1 'deps/$(EXTENSION_FUNCTIONS)' -o $@
+
+temp/bc/wasmhelpers.bc: src/c/wasmhelpers.c src/c/config.h
+	mkdir -p temp/bc
+	$(EMCC) $(CFLAGS) -s LINKABLE=1 src/c/wasmhelpers.c -o $@
 
 temp/api.js: $(wildcard src/ts/*)
 	$(TSC)
