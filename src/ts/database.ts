@@ -48,7 +48,7 @@ namespace Module {
             const pDb = Module["getValue"](ppDb, "*")
             stackRestore(stack)
 
-            if (code == 0) {
+            if (pDb !== 0) {
                 Database.fileMap[pDb] = fullPath;
             }
 
@@ -59,17 +59,13 @@ namespace Module {
 
             var fullPath = "/sqlite/" + fileName;
 
-            if (data) {
-                FS.writeFile(fullPath, data, { encoding: 'binary', flags: "w" });
-            }
-
             const stack = stackSave()
             const ppDb = stackAlloc<ptr<sqlite3>>(4)
             const code = sqlite3_open_v2(fullPath, ppDb, flags, vfs)
             const pDb = Module["getValue"](ppDb, "*")
             stackRestore(stack)
 
-            if (code == 0) {
+            if (pDb !== 0) {
                 Database.fileMap[pDb] = fullPath;
             }
 
@@ -120,17 +116,28 @@ namespace Module {
             const stack = stackSave()
             const ppStatement = stackAlloc<ptr<sqlite3>>(4)
             const ppTail = stackAlloc<ptr<string>>(4)
-            const code = sqlite3_prepare2(pDb, sql, -1, ppStatement, ppTail);
 
-            const pStr = Module["getValue"](ppTail, "*");
-            var tail = Module.UTF8ToString(pStr as ptr<string>);
+            var lengthSql = Module.lengthBytesUTF8(sql);
+            var pSql = Module._malloc(lengthSql + 1) as ptr<string>;
 
-            var tailIndex = tail.length != 0 ? sql.indexOf(tail) : -1;
+            try {
+                Module.stringToUTF8(sql, pSql, lengthSql + 1);
 
-            const statementHandle = Module["getValue"](ppStatement, "*")
-            stackRestore(stack)
+                const code = sqlite3_prepare2(pDb, pSql, -1, ppStatement, ppTail);
 
-            return new DatabasePrepareResult(statementHandle as ptr<sqlite3>, code, tailIndex);
+                const pTail = Module["getValue"](ppTail, "*");
+
+                // Compute the tail index from the pointers diff, so we can rebuild the string later
+                var tailIndex = pTail - pSql;
+
+                const statementHandle = Module["getValue"](ppStatement, "*")
+                stackRestore(stack)
+
+                return new DatabasePrepareResult(statementHandle as ptr<sqlite3>, code, tailIndex);
+            }
+            finally {
+                Module._free(pSql);
+            }
         }
 
         static changes(pDb: ptr<sqlite3>): number {
@@ -139,6 +146,18 @@ namespace Module {
 
         static last_insert_rowid(pDb: ptr<sqlite3>): number {
             return sqlite3_last_insert_rowid(pDb);
+        }
+
+        static errcode(pDb: ptr<sqlite3>): number {
+            return sqlite3_errcode(pDb);
+        }
+
+        static extended_errcode(pDb: ptr<sqlite3>): number {
+            return sqlite3_extended_errcode(pDb);
+        }
+
+        static extended_result_codes(pDb: ptr<sqlite3>, onoff: number): number {
+            return sqlite3_extended_result_codes(pDb, onoff);
         }
 
         static busy_timeout(pDb: ptr<sqlite3>, ms: number): number {

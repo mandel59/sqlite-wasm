@@ -12,6 +12,7 @@ namespace Module {
 
     export declare function UTF8ToString(ptr: ptr<string>): string
     export declare function stringToUTF8(str: string, outPtr: ptr<string>, maxBytesToWrite: number): void
+    export declare function lengthBytesUTF8(str: string): number
 
     export declare function stackSave(): stack;
     export declare function stackRestore(stack: stack): void;

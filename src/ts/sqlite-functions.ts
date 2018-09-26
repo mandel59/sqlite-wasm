@@ -15,6 +15,18 @@ namespace Module {
         : (pDb: ptr<sqlite3>) => number
         = Module["cwrap"]("sqlite3_last_insert_rowid", "number", ["number"])
 
+    export const sqlite3_errcode
+        : (pDb: ptr<sqlite3>) => number
+        = Module["cwrap"]("sqlite3_errcode", "number", ["number"])
+
+    export const sqlite3_extended_errcode
+        : (pDb: ptr<sqlite3>) => number
+        = Module["cwrap"]("sqlite3_extended_errcode", "number", ["number"])
+
+    export const sqlite3_extended_result_codes
+        : (pDb: ptr<sqlite3>, onoff: number) => number
+        = Module["cwrap"]("sqlite3_extended_result_codes", "number", ["number", "number"])
+
     export const sqlite3_busy_timeout
         : (pDb: ptr<sqlite3>, ms: number) => number
         = Module["cwrap"]("sqlite3_busy_timeout", "number", ["number", "number"])
@@ -28,8 +40,8 @@ namespace Module {
         = Module["cwrap"]("sqlite3_errmsg", "string", ["number"])
 
     export const sqlite3_prepare2
-        : (pDb: ptr<sqlite3>, sql: string, numBytes: number, pStatement: ptr<ptr<sqlite3>>, pzTail: ptr<ptr<string>>) => SQLiteResult
-        = Module["cwrap"]("sqlite3_prepare_v2", "number", ["number", "string", "number", "number", "number"])
+        : (pDb: ptr<sqlite3>, pSql: ptr<string>, numBytes: number, pStatement: ptr<ptr<sqlite3>>, pzTail: ptr<ptr<string>>) => SQLiteResult
+        = Module["cwrap"]("sqlite3_prepare_v2", "number", ["number", "number", "number", "number", "number"])
 
     export const sqlite3_column_count
         : (pStatement: ptr<sqlite3>) => number
