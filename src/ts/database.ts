@@ -12,6 +12,22 @@ namespace Module {
     export class Database {
 
         private static fileMap: { [instance: number]: string } = {};
+        private static synchronizing: boolean = false;
+
+        public static enablePersistence(path: string) {
+
+            // Arbirary path to avoid conflicts with existing persisted mount points
+            FS.mkdir("/sqlite");
+            FS.mount(IDBFS, {}, "/sqlite");
+
+            FS.syncfs(true,
+                err => {
+                    if (err) {
+                        console.error(`Error synchronizing filsystem from IndexDB: ${err}`);
+                    }
+                }
+            );
+        }
 
         //
         // Database-related apis
@@ -19,10 +35,11 @@ namespace Module {
         public static open(fileName: string, data: Uint8Array, options: ConnectionOptions = {}): DatabaseOpenResult {
 
             const opts = this.buildOptions(options);
-            const uri = `file:${encodeURI(fileName)}${opts ? "?" + opts : ""}`
+            var fullPath = "/sqlite/" + fileName;
+            const uri = `file:${encodeURI(fullPath)}${opts ? "?" + opts : ""}`
 
             if (data) {
-                FS.writeFile(fileName, data, { encoding: 'binary', flags: "w" });
+                FS.writeFile(fullPath, data, { encoding: 'binary', flags: "w" });
             }
 
             const stack = stackSave()
@@ -31,10 +48,25 @@ namespace Module {
             const pDb = Module["getValue"](ppDb, "*")
             stackRestore(stack)
 
-            FS.lstat
+            if (pDb !== 0) {
+                Database.fileMap[pDb] = fullPath;
+            }
 
-            if (code == 0) {
-                Database.fileMap[pDb] = fileName;
+            return new DatabaseOpenResult(pDb as ptr<sqlite3>, code);
+        }
+
+        public static open_v2(fileName: string, data: Uint8Array, flags: number, vfs: string) {
+
+            var fullPath = "/sqlite/" + fileName;
+
+            const stack = stackSave()
+            const ppDb = stackAlloc<ptr<sqlite3>>(4)
+            const code = sqlite3_open_v2(fullPath, ppDb, flags, vfs)
+            const pDb = Module["getValue"](ppDb, "*")
+            stackRestore(stack)
+
+            if (pDb !== 0) {
+                Database.fileMap[pDb] = fullPath;
             }
 
             return new DatabaseOpenResult(pDb as ptr<sqlite3>, code);
@@ -47,6 +79,8 @@ namespace Module {
         static close_v2(pDb: ptr<sqlite3>, exportData: boolean = false): DatabaseCloseResult {
 
             var res = sqlite3_close_v2(pDb);
+
+            Database.persist();
 
             try {
                 if (exportData) {
@@ -73,16 +107,37 @@ namespace Module {
             return sqlite3_errmsg(pDb);
         }
 
+        static db_filename(pDb: ptr<sqlite3>, zDBName: string): string {
+            return sqlite3_db_filename(pDb, zDBName);
+        }
+
         static prepare2(pDb: ptr<sqlite3>, sql: string): DatabasePrepareResult {
 
             const stack = stackSave()
             const ppStatement = stackAlloc<ptr<sqlite3>>(4)
-            const code = sqlite3_prepare2(pDb, sql, -1, ppStatement, <ptr<sqlite3>>0);
+            const ppTail = stackAlloc<ptr<string>>(4)
 
-            const statementHandle = Module["getValue"](ppStatement, "*")
-            stackRestore(stack)
+            var lengthSql = Module.lengthBytesUTF8(sql);
+            var pSql = Module._malloc(lengthSql + 1) as ptr<string>;
 
-            return new DatabasePrepareResult(statementHandle as ptr<sqlite3>, code);
+            try {
+                Module.stringToUTF8(sql, pSql, lengthSql + 1);
+
+                const code = sqlite3_prepare2(pDb, pSql, -1, ppStatement, ppTail);
+
+                const pTail = Module["getValue"](ppTail, "*");
+
+                // Compute the tail index from the pointers diff, so we can rebuild the string later
+                var tailIndex = pTail - pSql;
+
+                const statementHandle = Module["getValue"](ppStatement, "*")
+                stackRestore(stack)
+
+                return new DatabasePrepareResult(statementHandle as ptr<sqlite3>, code, tailIndex);
+            }
+            finally {
+                Module._free(pSql);
+            }
         }
 
         static changes(pDb: ptr<sqlite3>): number {
@@ -93,8 +148,35 @@ namespace Module {
             return sqlite3_last_insert_rowid(pDb);
         }
 
+        static errcode(pDb: ptr<sqlite3>): number {
+            return sqlite3_errcode(pDb);
+        }
+
+        static extended_errcode(pDb: ptr<sqlite3>): number {
+            return sqlite3_extended_errcode(pDb);
+        }
+
+        static extended_result_codes(pDb: ptr<sqlite3>, onoff: number): number {
+            return sqlite3_extended_result_codes(pDb, onoff);
+        }
+
         static busy_timeout(pDb: ptr<sqlite3>, ms: number): number {
             return sqlite3_busy_timeout(pDb, ms);
+        }
+
+        static persist(): void {
+            if (!Database.synchronizing) {
+                Database.synchronizing = true;
+
+                FS.syncfs(
+                    err => {
+                        Database.synchronizing = false;
+                        if (err) {
+                            console.error(`Error synchronizing filsystem from IndexDB: ${err}`);
+                        }
+                    }
+                );
+            }
         }
 
         //
@@ -104,12 +186,22 @@ namespace Module {
             return sqlite3_column_count(pStatement);
         }
 
+        static bind_parameter_count(pStatement: ptr<sqlite3>): number {
+            return sqlite3_bind_parameter_count(pStatement);
+        }
+
         static step(pStatement: ptr<sqlite3>): SQLiteResult {
             return sqlite3_step(pStatement);
         }
 
+        static stmt_readonly(pStatement: ptr<sqlite3>): SQLiteResult {
+            return sqlite3_stmt_readonly(pStatement);
+        }
+
         static finalize(pStatement: ptr<sqlite3>): SQLiteResult {
-            return sqlite3_finalize(pStatement);
+            var res = sqlite3_finalize(pStatement);
+            Database.persist();
+            return res;
         }
 
         static reset(pStatement: ptr<sqlite3>): SQLiteResult {
@@ -254,10 +346,12 @@ namespace Module {
     export class DatabasePrepareResult {
         public readonly pStatement: ptr<sqlite3>;
         public readonly Result: SQLiteResult;
+        public readonly TailIndex: number;
 
-        constructor(pStatement: ptr<sqlite3>, result: SQLiteResult) {
+        constructor(pStatement: ptr<sqlite3>, result: SQLiteResult, tailIndex: number) {
             this.Result = result;
             this.pStatement = pStatement;
+            this.TailIndex = tailIndex;
         }
     }
 }
