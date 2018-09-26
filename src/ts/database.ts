@@ -12,6 +12,22 @@ namespace Module {
     export class Database {
 
         private static fileMap: { [instance: number]: string } = {};
+        private static synchronizing: boolean = false;
+
+        public static enablePersistence(path: string) {
+
+            // Arbirary path to avoid conflicts with existing persisted mount points
+            FS.mkdir("/sqlite");
+            FS.mount(IDBFS, {}, "/sqlite");
+
+            FS.syncfs(true,
+                err => {
+                    if (err) {
+                        console.error(`Error synchronizing filsystem from IndexDB: ${err}`);
+                    }
+                }
+            );
+        }
 
         //
         // Database-related apis
@@ -19,10 +35,11 @@ namespace Module {
         public static open(fileName: string, data: Uint8Array, options: ConnectionOptions = {}): DatabaseOpenResult {
 
             const opts = this.buildOptions(options);
-            const uri = `file:${encodeURI(fileName)}${opts ? "?" + opts : ""}`
+            var fullPath = "/sqlite/" + fileName;
+            const uri = `file:${encodeURI(fullPath)}${opts ? "?" + opts : ""}`
 
             if (data) {
-                FS.writeFile(fileName, data, { encoding: 'binary', flags: "w" });
+                FS.writeFile(fullPath, data, { encoding: 'binary', flags: "w" });
             }
 
             const stack = stackSave()
@@ -31,10 +48,29 @@ namespace Module {
             const pDb = Module["getValue"](ppDb, "*")
             stackRestore(stack)
 
-            FS.lstat
+            if (code == 0) {
+                Database.fileMap[pDb] = fullPath;
+            }
+
+            return new DatabaseOpenResult(pDb as ptr<sqlite3>, code);
+        }
+
+        public static open_v2(fileName: string, data: Uint8Array, flags: number, vfs: string) {
+
+            var fullPath = "/sqlite/" + fileName;
+
+            if (data) {
+                FS.writeFile(fullPath, data, { encoding: 'binary', flags: "w" });
+            }
+
+            const stack = stackSave()
+            const ppDb = stackAlloc<ptr<sqlite3>>(4)
+            const code = sqlite3_open_v2(fullPath, ppDb, flags, vfs)
+            const pDb = Module["getValue"](ppDb, "*")
+            stackRestore(stack)
 
             if (code == 0) {
-                Database.fileMap[pDb] = fileName;
+                Database.fileMap[pDb] = fullPath;
             }
 
             return new DatabaseOpenResult(pDb as ptr<sqlite3>, code);
@@ -47,6 +83,8 @@ namespace Module {
         static close_v2(pDb: ptr<sqlite3>, exportData: boolean = false): DatabaseCloseResult {
 
             var res = sqlite3_close_v2(pDb);
+
+            Database.persist();
 
             try {
                 if (exportData) {
@@ -73,16 +111,26 @@ namespace Module {
             return sqlite3_errmsg(pDb);
         }
 
+        static db_filename(pDb: ptr<sqlite3>, zDBName: string): string {
+            return sqlite3_db_filename(pDb, zDBName);
+        }
+
         static prepare2(pDb: ptr<sqlite3>, sql: string): DatabasePrepareResult {
 
             const stack = stackSave()
             const ppStatement = stackAlloc<ptr<sqlite3>>(4)
-            const code = sqlite3_prepare2(pDb, sql, -1, ppStatement, <ptr<sqlite3>>0);
+            const ppTail = stackAlloc<ptr<string>>(4)
+            const code = sqlite3_prepare2(pDb, sql, -1, ppStatement, ppTail);
+
+            const pStr = Module["getValue"](ppTail, "*");
+            var tail = Module.UTF8ToString(pStr as ptr<string>);
+
+            var tailIndex = tail.length != 0 ? sql.indexOf(tail) : -1;
 
             const statementHandle = Module["getValue"](ppStatement, "*")
             stackRestore(stack)
 
-            return new DatabasePrepareResult(statementHandle as ptr<sqlite3>, code);
+            return new DatabasePrepareResult(statementHandle as ptr<sqlite3>, code, tailIndex);
         }
 
         static changes(pDb: ptr<sqlite3>): number {
@@ -97,6 +145,21 @@ namespace Module {
             return sqlite3_busy_timeout(pDb, ms);
         }
 
+        static persist(): void {
+            if (!Database.synchronizing) {
+                Database.synchronizing = true;
+
+                FS.syncfs(
+                    err => {
+                        Database.synchronizing = false;
+                        if (err) {
+                            console.error(`Error synchronizing filsystem from IndexDB: ${err}`);
+                        }
+                    }
+                );
+            }
+        }
+
         //
         // Statement-related apis
         //
@@ -104,12 +167,22 @@ namespace Module {
             return sqlite3_column_count(pStatement);
         }
 
+        static bind_parameter_count(pStatement: ptr<sqlite3>): number {
+            return sqlite3_bind_parameter_count(pStatement);
+        }
+
         static step(pStatement: ptr<sqlite3>): SQLiteResult {
             return sqlite3_step(pStatement);
         }
 
+        static stmt_readonly(pStatement: ptr<sqlite3>): SQLiteResult {
+            return sqlite3_stmt_readonly(pStatement);
+        }
+
         static finalize(pStatement: ptr<sqlite3>): SQLiteResult {
-            return sqlite3_finalize(pStatement);
+            var res = sqlite3_finalize(pStatement);
+            Database.persist();
+            return res;
         }
 
         static reset(pStatement: ptr<sqlite3>): SQLiteResult {
@@ -254,10 +327,12 @@ namespace Module {
     export class DatabasePrepareResult {
         public readonly pStatement: ptr<sqlite3>;
         public readonly Result: SQLiteResult;
+        public readonly TailIndex: number;
 
-        constructor(pStatement: ptr<sqlite3>, result: SQLiteResult) {
+        constructor(pStatement: ptr<sqlite3>, result: SQLiteResult, tailIndex: number) {
             this.Result = result;
             this.pStatement = pStatement;
+            this.TailIndex = tailIndex;
         }
     }
 }
