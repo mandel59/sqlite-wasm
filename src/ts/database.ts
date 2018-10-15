@@ -114,7 +114,7 @@ namespace Module {
         static prepare2(pDb: ptr<sqlite3>, sql: string): DatabasePrepareResult {
 
             const stack = stackSave()
-            const ppStatement = stackAlloc<ptr<sqlite3>>(4)
+            const ppStatement = stackAlloc<ptr<sqlite3_stmt>>(4)
             const ppTail = stackAlloc<ptr<string>>(4)
 
             var lengthSql = Module.lengthBytesUTF8(sql);
@@ -133,7 +133,7 @@ namespace Module {
                 const statementHandle = Module["getValue"](ppStatement, "*")
                 stackRestore(stack)
 
-                return new DatabasePrepareResult(statementHandle as ptr<sqlite3>, code, tailIndex);
+                return new DatabasePrepareResult(statementHandle as ptr<sqlite3_stmt>, code, tailIndex);
             }
             finally {
                 Module._free(pSql);
@@ -182,69 +182,69 @@ namespace Module {
         //
         // Statement-related apis
         //
-        static column_count(pStatement: ptr<sqlite3>): number {
+        static column_count(pStatement: ptr<sqlite3_stmt>): number {
             return sqlite3_column_count(pStatement);
         }
 
-        static bind_parameter_count(pStatement: ptr<sqlite3>): number {
+        static bind_parameter_count(pStatement: ptr<sqlite3_stmt>): number {
             return sqlite3_bind_parameter_count(pStatement);
         }
 
-        static step(pStatement: ptr<sqlite3>): SQLiteResult {
+        static step(pStatement: ptr<sqlite3_stmt>): SQLiteResult {
             return sqlite3_step(pStatement);
         }
 
-        static stmt_readonly(pStatement: ptr<sqlite3>): SQLiteResult {
+        static stmt_readonly(pStatement: ptr<sqlite3_stmt>): SQLiteResult {
             return sqlite3_stmt_readonly(pStatement);
         }
 
-        static finalize(pStatement: ptr<sqlite3>): SQLiteResult {
+        static finalize(pStatement: ptr<sqlite3_stmt>): SQLiteResult {
             var res = sqlite3_finalize(pStatement);
             Database.persist();
             return res;
         }
 
-        static reset(pStatement: ptr<sqlite3>): SQLiteResult {
+        static reset(pStatement: ptr<sqlite3_stmt>): SQLiteResult {
             return sqlite3_reset(pStatement);
         }
 
-        static column_name(pStatement: ptr<sqlite3>, index: number): string {
+        static column_name(pStatement: ptr<sqlite3_stmt>, index: number): string {
             return sqlite3_column_name(pStatement, index);
         }
 
-        static column_type(pStatement: ptr<sqlite3>, index: number): number {
+        static column_type(pStatement: ptr<sqlite3_stmt>, index: number): number {
             return sqlite3_column_type(pStatement, index);
         }
 
-        static column_bytes(pStatement: ptr<sqlite3>, index: number): number {
+        static column_bytes(pStatement: ptr<sqlite3_stmt>, index: number): number {
             return sqlite3_column_bytes(pStatement, index);
         }
 
-        static bind_text(pStatement: ptr<sqlite3>, index: number, value: string): SQLiteResult {
+        static bind_text(pStatement: ptr<sqlite3_stmt>, index: number, value: string): SQLiteResult {
             return sqlite3_bind_text(pStatement, index, value, -1, <ptr<sqlite3>>-1);
         }
 
-        static bind_int(pStatement: ptr<sqlite3>, index: number, value: number): SQLiteResult {
+        static bind_int(pStatement: ptr<sqlite3_stmt>, index: number, value: number): SQLiteResult {
             return sqlite3_bind_int(pStatement, index, value);
         }
 
-        static bind_int64(pStatement: ptr<sqlite3>, index: number, value: Uint8Array): SQLiteResult {
+        static bind_int64(pStatement: ptr<sqlite3_stmt>, index: number, value: Uint8Array): SQLiteResult {
             return sqlite3_bind_int64ptr(pStatement, index, value);
         }
 
-        static bind_double(pStatement: ptr<sqlite3>, index: number, value: number): SQLiteResult {
+        static bind_double(pStatement: ptr<sqlite3_stmt>, index: number, value: number): SQLiteResult {
             return sqlite3_bind_double(pStatement, index, value);
         }
 
-        static bind_null(pStatement: ptr<sqlite3>, index: number): SQLiteResult {
+        static bind_null(pStatement: ptr<sqlite3_stmt>, index: number): SQLiteResult {
             return sqlite3_bind_null(pStatement, index);
         }
 
-        static bind_parameter_index(pStatement: ptr<sqlite3>, name: string): number {
+        static bind_parameter_index(pStatement: ptr<sqlite3_stmt>, name: string): number {
             return sqlite3_bind_parameter_index(pStatement, name);
         }
 
-        static bind_blob(pStatement: ptr<sqlite3>, index: number, value: Uint8Array, length: number): SQLiteResult {
+        static bind_blob(pStatement: ptr<sqlite3_stmt>, index: number, value: Uint8Array, length: number): SQLiteResult {
 
             var data = Module._malloc(length);
 
@@ -260,15 +260,15 @@ namespace Module {
             }
         }
 
-        static column_int(pStatement: ptr<sqlite3>, index: number): number {
+        static column_int(pStatement: ptr<sqlite3_stmt>, index: number): number {
             return sqlite3_column_int(pStatement, index);
         }
 
-        static column_double(pStatement: ptr<sqlite3>, index: number): number {
+        static column_double(pStatement: ptr<sqlite3_stmt>, index: number): number {
             return sqlite3_column_double(pStatement, index);
         }
 
-        static column_int64ptr(pStatement: ptr<sqlite3>, index: number): Uint8Array {
+        static column_int64ptr(pStatement: ptr<sqlite3_stmt>, index: number): Uint8Array {
 
             var data = Module._malloc(8);
 
@@ -287,7 +287,7 @@ namespace Module {
             }
         }
 
-        static column_blob(pStatement: ptr<sqlite3>, index: number): Uint8Array {
+        static column_blob(pStatement: ptr<sqlite3_stmt>, index: number): Uint8Array {
             var ptr = sqlite3_column_blob(pStatement, index);
             var size = sqlite3_column_bytes(pStatement, index);
 
@@ -300,7 +300,7 @@ namespace Module {
             return output;
         }
 
-        static column_text(pStatement: ptr<sqlite3>, index: number): string {
+        static column_text(pStatement: ptr<sqlite3_stmt>, index: number): string {
             return sqlite3_column_text(pStatement, index);
         }
 
@@ -344,11 +344,11 @@ namespace Module {
     }
 
     export class DatabasePrepareResult {
-        public readonly pStatement: ptr<sqlite3>;
+        public readonly pStatement: ptr<sqlite3_stmt>;
         public readonly Result: SQLiteResult;
         public readonly TailIndex: number;
 
-        constructor(pStatement: ptr<sqlite3>, result: SQLiteResult, tailIndex: number) {
+        constructor(pStatement: ptr<sqlite3_stmt>, result: SQLiteResult, tailIndex: number) {
             this.Result = result;
             this.pStatement = pStatement;
             this.TailIndex = tailIndex;
