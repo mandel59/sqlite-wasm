@@ -7,7 +7,7 @@
     "build": "make",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Ryusei Yamaguchi",
   "license": "MIT",
   "devDependencies": {
     "@types/emscripten": "0.0.30",
