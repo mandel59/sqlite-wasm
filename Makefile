@@ -6,7 +6,7 @@ SQLITE_AMALGAMATION_ZIP_SHA1 = e9dc46fc55a512b5d2ef97fd548b7ab4beb2d3e3
 
 EXTENSION_FUNCTIONS = extension-functions.c
 EXTENSION_FUNCTIONS_URL = http://www.sqlite.org/contrib/download/extension-functions.c?get=25
-EXTENSION_FUNCTIONS_SHA1 = c68fa706d6d9ff98608044c00212473f9c14892f
+EXTENSION_FUNCTIONS_SHA1 = da39a3ee5e6b4b0d3255bfef95601890afd80709
 
 # source files
 
