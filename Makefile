@@ -31,6 +31,8 @@ CFLAGS = \
 EMFLAGS = \
 	-s ALLOW_MEMORY_GROWTH=1 \
 	-s EXPORTED_FUNCTIONS=@$(EXPORTED_FUNCTIONS_JSON) \
+	-s EXTRA_EXPORTED_RUNTIME_METHODS=[$(shell \
+		grep -Po '(?<=declare function )\w+' src/ts/module.ts | sed -e 's/\(.*\)/"\1"/;' | paste -s -d,)] \
 	-s RESERVED_FUNCTION_POINTERS=64 \
 	-s WASM=1 \
 	--post-js temp/api.js \
@@ -41,8 +43,9 @@ EMFLAGS_DEBUG = \
 
 EMFLAGS_DIST = \
 	-s INLINING_LIMIT=50 \
+	-s IGNORE_CLOSURE_COMPILER_ERRORS=1 \
 	--closure 1 \
-	-O3
+	-Os
 
 # directories
 

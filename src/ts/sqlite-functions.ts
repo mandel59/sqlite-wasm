@@ -9,12 +9,12 @@ namespace Module {
         : <T extends number>(
             pDb: ptr<sqlite3>,
             sql: string,
-            callback: ptr<(x: T, numColumns: number, columnTexts: arr<ptr<string>>, columnNames: arr<ptr<string>>) => number> | null,
+            callback: ptr<(x: T, numColumns: number, columnTexts: arr<ptr<string>>, columnNames: arr<ptr<string>>) => number> | 0,
             x: T,
-            errmsg: ptr<sqlite3_ptr<string>> | null
+            errmsg: ptr<sqlite3_ptr<string>> | 0
         ) => SQLiteResult
         = Module["cwrap"]("sqlite3_exec", "number", ["number", "string", "number", "number", "number"])
     export const sqlite3_free
         : (ptr: sqlite3_ptr<any> | 0) => void
-        = Module["cwrap"]("sqlite3_free", "", ["number"])
+        = Module["cwrap"]("sqlite3_free", "undefined", ["number"])
 }
