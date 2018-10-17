@@ -28,65 +28,40 @@ namespace Module {
             const q = opts.join("&")
             const uri = this["uri"] = `file:${encodeURI(filename)}${q ? "?" + q : ""}`
 
-            const stack = stackSave()
-            const ppDb = stackAlloc<ptr<sqlite3>>(4)
-            const code = sqlite3_open(uri, ppDb)
-            const pDb = Module["getValue"](ppDb, "*")
-            stackRestore(stack)
+            const { result: code, pDb } = sqlite3_open(uri)
 
             if (code) { throw new SQLiteError(code) }
 
             this.pDb = pDb as ptr<sqlite3>
         }
 
-        "close"(): void {
+        close(): void {
             const code = sqlite3_close_v2(this.pDb)
             if (code) { throw new SQLiteError(code) }
             delete this.pDb
         }
 
-        "exec"<T>(
+        exec<T>(
             sql: string,
-            callback?: ((columns: {[k in string]: string}) => T | undefined),
-        ): T | undefined {
-            let pCallback: ptr<(x: 0, numColumns: number, columnTexts: ptr<arr<ptr<str>>>, columnNames: ptr<arr<ptr<str>>>) => number> | 0 = 0
-            let result: T | undefined = undefined
-            let reason = undefined
-            if (callback) {
-                pCallback = addFunction((x: number, n: number, texts: ptr<arr<ptr<str>>>, names: ptr<arr<ptr<str>>>) => {
-                    const col: {[k in string]: string} = {}
-                    for (let i = 0; i < n; i++) {
-                        const pText = Module["getValue"](texts + 4 * i as ptr<ptr<str>>, "*") as ptr<str>
-                        const pName = Module["getValue"](names + 4 * i as ptr<ptr<str>>, "*") as ptr<str>
-                        const text = Module["UTF8ToString"](pText)
-                        const name = Module["UTF8ToString"](pName)
-                        col[name] = text
-                    }
-                    try {
-                        result = callback(col)
-                        return result === undefined ? 0 : 1
-                    } catch (error) {
-                        reason = error
-                        return 1
-                    }
-                })
-            }
+            callback?: ((columns: { [k in string]: string }) => T | undefined),
+        ): { result: SQLiteResult, errmsg: string | null, value: T | undefined, reason: any } {
+            let value: T | undefined = undefined
+            let reason: any = undefined
+            const { result, errmsg } = sqlite3_exec(this.pDb, sql, callback == null ? undefined : (numColumns, columnTexts, columnNames) => {
+                const record: Record<string, string> = Object.create(null)
+                for (let i = 0; i < numColumns; i++) {
+                    record[columnNames[i]] = columnTexts[i]
+                }
+                try {
+                    value = callback(record)
+                    return value !== undefined
+                } catch (error) {
+                    reason = error
+                    return true
+                }
+            })
 
-            const stack = stackSave()
-            const ppErrmsg = stackAlloc(4) as ptr<sqlite3_ptr<str>>
-            const code = sqlite3_exec(this.pDb, sql, pCallback, 0, ppErrmsg)
-            const pErrmsg = Module["getValue"](ppErrmsg, "*")
-            stackRestore(stack)
-
-            if (pCallback) { removeFunction(pCallback) }
-            let errmsg = undefined
-            if (pErrmsg) {
-                errmsg = Module["UTF8ToString"](pErrmsg)
-                sqlite3_free(pErrmsg)
-            }
-            if (reason !== undefined) { throw reason }
-            if (code) { throw new SQLiteError(code, errmsg) }
-            return result
+            return { result, errmsg, value, reason }
         }
     }
 }
