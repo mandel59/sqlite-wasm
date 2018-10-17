@@ -49,15 +49,15 @@ namespace Module {
             sql: string,
             callback?: ((columns: {[k in string]: string}) => T | undefined),
         ): T | undefined {
-            let pCallback: ptr<(x: 0, numColumns: number, columnTexts: ptr<arr<ptr<string>>>, columnNames: ptr<arr<ptr<string>>>) => number> | 0 = 0
+            let pCallback: ptr<(x: 0, numColumns: number, columnTexts: ptr<arr<ptr<str>>>, columnNames: ptr<arr<ptr<str>>>) => number> | 0 = 0
             let result: T | undefined = undefined
             let reason = undefined
             if (callback) {
-                pCallback = addFunction((x: number, n: number, texts: ptr<arr<ptr<string>>>, names: ptr<arr<ptr<string>>>) => {
+                pCallback = addFunction((x: number, n: number, texts: ptr<arr<ptr<str>>>, names: ptr<arr<ptr<str>>>) => {
                     const col: {[k in string]: string} = {}
                     for (let i = 0; i < n; i++) {
-                        const pText = Module["getValue"](texts + 4 * i as ptr<ptr<string>>, "*") as ptr<string>
-                        const pName = Module["getValue"](names + 4 * i as ptr<ptr<string>>, "*") as ptr<string>
+                        const pText = Module["getValue"](texts + 4 * i as ptr<ptr<str>>, "*") as ptr<str>
+                        const pName = Module["getValue"](names + 4 * i as ptr<ptr<str>>, "*") as ptr<str>
                         const text = Module["UTF8ToString"](pText)
                         const name = Module["UTF8ToString"](pName)
                         col[name] = text
@@ -73,7 +73,7 @@ namespace Module {
             }
 
             const stack = stackSave()
-            const ppErrmsg = stackAlloc(4) as ptr<sqlite3_ptr<string>>
+            const ppErrmsg = stackAlloc(4) as ptr<sqlite3_ptr<str>>
             const code = sqlite3_exec(this.pDb, sql, pCallback, 0, ppErrmsg)
             const pErrmsg = Module["getValue"](ppErrmsg, "*")
             stackRestore(stack)

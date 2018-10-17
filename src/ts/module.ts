@@ -27,8 +27,8 @@ namespace Module {
     export declare function getValue(ptr: ptr<i32>, type: "i32", noSafe?: boolean): i32;
     export declare function getValue(ptr: ptr<number>, type: "double", noSafe?: boolean): number;
 
-    export declare function UTF8ToString(ptr: ptr<string>): string
-    export declare function stringToUTF8(str: string, outPtr: ptr<string>, maxBytesToWrite: number): void
+    export declare function UTF8ToString(ptr: ptr<str>): string
+    export declare function stringToUTF8(str: string, outPtr: ptr<str>, maxBytesToWrite: number): void
 
     export declare function stackSave(): stack
     export declare function stackRestore(stack: stack): void

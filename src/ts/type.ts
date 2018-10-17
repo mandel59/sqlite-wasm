@@ -4,5 +4,6 @@ namespace Module {
     export type i32 = number & { __type__: "i32", __size__: 4 }
     export type ptr<T> = number & { __type__: "ptr", __deref__: T, __size__: 4 }
     export type arr<T extends sized> = { __type__: "arr", __deref__: Array<T> }
+    export type str = { __type__: "str" }
     export type sized = { __size__: number }
 }
