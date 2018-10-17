@@ -68,11 +68,11 @@ clean-cache:
 
 cache/$(SQLITE_AMALGAMATION).zip:
 	mkdir -p cache
-	curl '$(SQLITE_AMALGAMATION_ZIP_URL)' -o $@
+	curl -LsSf '$(SQLITE_AMALGAMATION_ZIP_URL)' -o $@
 
 cache/$(EXTENSION_FUNCTIONS):
 	mkdir -p cache
-	curl '$(EXTENSION_FUNCTIONS_URL)' -o $@
+	curl -LsSf '$(EXTENSION_FUNCTIONS_URL)' -o $@
 
 ## deps
 
