@@ -9,7 +9,7 @@ namespace Module {
         : <T extends number>(
             pDb: ptr<sqlite3>,
             sql: string,
-            callback: ptr<(x: T, numColumns: number, columnTexts: arr<ptr<string>>, columnNames: arr<ptr<string>>) => number> | 0,
+            callback: ptr<(x: T, numColumns: number, columnTexts: ptr<arr<ptr<string>>>, columnNames: ptr<arr<ptr<string>>>) => number> | 0,
             x: T,
             errmsg: ptr<sqlite3_ptr<string>> | 0
         ) => SQLiteResult

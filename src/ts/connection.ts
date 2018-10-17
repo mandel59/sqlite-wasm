@@ -49,11 +49,11 @@ namespace Module {
             sql: string,
             callback?: ((columns: {[k in string]: string}) => T | undefined),
         ): T | undefined {
-            let pCallback: ptr<(x: 0, numColumns: number, columnTexts: arr<ptr<string>>, columnNames: arr<ptr<string>>) => number> | 0 = 0
+            let pCallback: ptr<(x: 0, numColumns: number, columnTexts: ptr<arr<ptr<string>>>, columnNames: ptr<arr<ptr<string>>>) => number> | 0 = 0
             let result: T | undefined = undefined
             let reason = undefined
             if (callback) {
-                pCallback = addFunction((x: number, n: number, texts: arr<ptr<string>>, names: arr<ptr<string>>) => {
+                pCallback = addFunction((x: number, n: number, texts: ptr<arr<ptr<string>>>, names: ptr<arr<ptr<string>>>) => {
                     const col: {[k in string]: string} = {}
                     for (let i = 0; i < n; i++) {
                         const pText = Module["getValue"](texts + 4 * i as ptr<ptr<string>>, "*") as ptr<string>
