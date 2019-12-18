@@ -29,19 +29,24 @@ namespace Module {
             callback?: (numColumns: number, columnTexts: string[], columnNames: string[]) => boolean,
         ) => { result: SQLiteResult, errmsg: string | null }
         = (pDb, sql, callback) => {
-            const pCallback = callback == null ? 0 : addFunction((_x: 0, numColumns: i32, pColumnTexts: ptr<arr<ptr<str>>>, pColumnNames: ptr<arr<ptr<str>>>) => {
-                const columnTexts = []
-                const columnNames = []
-                for (let i: number = pColumnTexts; i < pColumnTexts + numColumns * 4; i += 4) {
-                    const columnText = UTF8ToString(getValue<ptr<str>>(i as ptr<ptr<str>>, "*"))
-                    columnTexts.push(columnText)
-                }
-                for (let i: number = pColumnNames; i < pColumnNames + numColumns * 4; i += 4) {
-                    const columnName = UTF8ToString(getValue<ptr<str>>(i as ptr<ptr<str>>, "*"))
-                    columnNames.push(columnName)
-                }
-                return (callback(numColumns, columnTexts, columnNames) as any) | 0 as i32
-            })
+            const pCallback
+                = callback == null
+                    ? 0
+                    : addFunction(
+                        (_x: 0, numColumns: i32, pColumnTexts: ptr<arr<ptr<str>>>, pColumnNames: ptr<arr<ptr<str>>>) => {
+                            const columnTexts = []
+                            const columnNames = []
+                            for (let i: number = pColumnTexts; i < pColumnTexts + numColumns * 4; i += 4) {
+                                const columnText = UTF8ToString(getValue<ptr<str>>(i as ptr<ptr<str>>, "*"))
+                                columnTexts.push(columnText)
+                            }
+                            for (let i: number = pColumnNames; i < pColumnNames + numColumns * 4; i += 4) {
+                                const columnName = UTF8ToString(getValue<ptr<str>>(i as ptr<ptr<str>>, "*"))
+                                columnNames.push(columnName)
+                            }
+                            return (callback(numColumns, columnTexts, columnNames) as any) | 0 as i32
+                        },
+                        "iiiii")
             const stack = stackSave()
             const ppErrmsg = stackAlloc<sqlite3_ptr<str>>(4)
             const result = Module["ccall"]<"number", ["number", "string", "number", "number", "number"]>("sqlite3_exec", "number",

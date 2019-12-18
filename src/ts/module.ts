@@ -41,6 +41,6 @@ namespace Module {
     export declare function stackSave(): stack
     export declare function stackRestore(stack: stack): void
     export declare function stackAlloc<T extends sized>(size: number & T["__size__"]): ptr<T>
-    export declare function addFunction<F extends Function>(func: F): ptr<fn<F>>
+    export declare function addFunction<F extends Function>(func: F, sig: string): ptr<fn<F>>
     export declare function removeFunction<F extends Function>(ptr: ptr<fn<F>>): void
 }
