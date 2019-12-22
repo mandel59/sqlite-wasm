@@ -8,6 +8,7 @@ namespace Module {
         errmsg: ptr<sqlite3_ptr<str>> | 0
     ): SQLiteResult
     export declare function _sqlite3_free(ptr: sqlite3_ptr<any> | 0): void
+    export declare function _sqlite3_db_config(pDb: ptr<sqlite3>, op: SQLiteDbConfig.ENABLE_LOAD_EXTENSION, enable: -1 | 0 | 1, pEnabled: ptr<i32> | 0): SQLiteResult
 
     export const sqlite3_open
         : (filename: string) => { result: SQLiteResult, pDb: ptr<sqlite3> | 0 }
@@ -64,4 +65,8 @@ namespace Module {
     export const sqlite3_free
         : (ptr: sqlite3_ptr<any> | 0) => void
         = Module["cwrap"]("sqlite3_free", "undefined", ["number"])
+
+    export const sqlite3_load_extension
+        : (pDb: ptr<sqlite3>, file: string, proc?: string, ppErrmsg?: ptr<sqlite3_ptr<str>>) => SQLiteResult
+        = Module["cwrap"]("sqlite3_load_extension", "number", ["number", "string", "string", "number"])
 }

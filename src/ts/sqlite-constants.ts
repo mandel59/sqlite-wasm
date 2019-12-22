@@ -121,4 +121,23 @@ namespace Module {
         AUTH_USER = (AUTH | (1 << 8)),
         OK_LOAD_PERMANENTLY = (OK | (1 << 8)),
     }
+
+    export enum SQLiteDbConfig {
+        MAINDBNAME = 1000,
+        LOOKASIDE = 1001,
+        ENABLE_FKEY = 1002,
+        ENABLE_TRIGGER = 1003,
+        ENABLE_FTS3_TOKENIZER = 1004,
+        ENABLE_LOAD_EXTENSION = 1005,
+        NO_CKPT_ON_CLOSE = 1006,
+        ENABLE_QPSG = 1007,
+        TRIGGER_EQP = 1008,
+        RESET_DATABASE = 1009,
+        DEFENSIVE = 1010,
+        WRITABLE_SCHEMA = 1011,
+        LEGACY_ALTER_TABLE = 1012,
+        DQS_DML = 1013,
+        DQS_DDL = 1014,
+        ENABLE_VIEW = 1015,
+    }
 }
