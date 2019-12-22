@@ -4,13 +4,6 @@ namespace Module {
         : (pDb: ptr<sqlite3>) => SQLiteResult
         = _sqlite3_close_v2
 
-    export declare function _sqlite3_exec<T extends ptr<any>>(
-        pDb: ptr<sqlite3>,
-        sql: ptr<str>,
-        callback: ptr<fn<(x: T | 0, numColumns: i32, columnTexts: ptr<arr<ptr<str>>>, columnNames: ptr<arr<ptr<str>>>) => i32>> | 0,
-        errmsg: ptr<sqlite3_ptr<str>> | 0
-    ): SQLiteResult
-
     export declare function _sqlite3_free(ptr: sqlite3_ptr<any> | 0): void
     export const sqlite3_free
         : (ptr: sqlite3_ptr<any> | 0) => void
@@ -27,6 +20,13 @@ namespace Module {
             Module["stackRestore"](stack)
             return { result, pDb }
         }
+
+    export declare function _sqlite3_exec<T extends ptr<any>>(
+        pDb: ptr<sqlite3>,
+        sql: ptr<str>,
+        callback: ptr<fn<(x: T | 0, numColumns: i32, columnTexts: ptr<arr<ptr<str>>>, columnNames: ptr<arr<ptr<str>>>) => i32>> | 0,
+        errmsg: ptr<sqlite3_ptr<str>> | 0
+    ): SQLiteResult
     export const sqlite3_exec
         : (
             pDb: ptr<sqlite3>,
