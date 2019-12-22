@@ -63,5 +63,13 @@ namespace Module {
 
             return { result, errmsg, value, reason }
         }
+
+        enableLoadExtension() {
+            return Module["_sqlite3_db_config"](this.pDb, SQLiteDbConfig.ENABLE_LOAD_EXTENSION, 1, 0)
+        }
+
+        loadExtension(file: string, entry?: string) {
+            return sqlite3_load_extension(this.pDb, file, entry)
+        }
     }
 }

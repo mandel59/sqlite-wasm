@@ -67,6 +67,18 @@ namespace Module {
         = Module["cwrap"]("sqlite3_free", "undefined", ["number"])
 
     export const sqlite3_load_extension
-        : (pDb: ptr<sqlite3>, file: string, proc?: string, ppErrmsg?: ptr<sqlite3_ptr<str>>) => SQLiteResult
-        = Module["cwrap"]("sqlite3_load_extension", "number", ["number", "string", "string", "number"])
+        = (pDb: ptr<sqlite3>, file: string, proc?: string) => {
+            const stack = stackSave()
+            const ppErrmsg = stackAlloc<sqlite3_ptr<str>>(4)
+            const result = Module["ccall"](
+                "sqlite3_load_extension",
+                "number",
+                ["number", "string", "string", "number"],
+                [pDb, file, proc, ppErrmsg]) as SQLiteResult
+            const pErrmsg = getValue<sqlite3_ptr<str>>(ppErrmsg, "*")
+            stackRestore(stack)
+            sqlite3_free(pErrmsg)
+            const errmsg = pErrmsg === 0 ? null : UTF8ToString(pErrmsg)
+            return { result, errmsg }
+        }
 }

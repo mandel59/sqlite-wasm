@@ -1,6 +1,7 @@
 cache/
 deps/
 temp/
+ext/
 debug/
 dist/
 node_modules/
