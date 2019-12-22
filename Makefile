@@ -29,7 +29,11 @@ EMFLAGS = \
 	-s ALLOW_MEMORY_GROWTH=1 \
 	-s RESERVED_FUNCTION_POINTERS=64 \
 	-s WASM=1
-	
+
+EMFLAGS_EXTENSION = \
+	-s INLINING_LIMIT=50 \
+	-Os
+
 EMFLAGS_DEBUG = \
 	-s INLINING_LIMIT=10 \
 	-O1
@@ -131,7 +135,7 @@ ext: ext/extension-functions.wasm
 
 ext/extension-functions.wasm: temp/bc/extension-functions.bc
 	mkdir -p ext
-	$(EMCC) $(EMFLAGS) -s SIDE_MODULE=1 -s EXPORTED_FUNCTIONS='["_sqlite3_extension_init"]'  $(EMFLAGS_DEBUG) \
+	$(EMCC) $(EMFLAGS) -s SIDE_MODULE=1 -s EXPORTED_FUNCTIONS='["_sqlite3_extension_init"]' $(EMFLAGS_EXTENSION) \
 		temp/bc/extension-functions.bc -o $@
 
 ## debug
