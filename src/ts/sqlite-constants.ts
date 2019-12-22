@@ -140,4 +140,38 @@ namespace Module {
         DQS_DDL = 1014,
         ENABLE_VIEW = 1015,
     }
+
+    export type SQLiteDbConfigIntPint =
+        | SQLiteDbConfig.ENABLE_FKEY
+        | SQLiteDbConfig.ENABLE_TRIGGER
+        | SQLiteDbConfig.ENABLE_VIEW
+        | SQLiteDbConfig.ENABLE_FTS3_TOKENIZER
+        | SQLiteDbConfig.ENABLE_LOAD_EXTENSION
+        | SQLiteDbConfig.NO_CKPT_ON_CLOSE
+        | SQLiteDbConfig.ENABLE_QPSG
+        | SQLiteDbConfig.TRIGGER_EQP
+        | SQLiteDbConfig.RESET_DATABASE
+        | SQLiteDbConfig.DEFENSIVE
+        | SQLiteDbConfig.WRITABLE_SCHEMA
+        | SQLiteDbConfig.LEGACY_ALTER_TABLE
+        | SQLiteDbConfig.DQS_DDL
+        | SQLiteDbConfig.DQS_DML
+    export function configTypeIsIntPint(op: SQLiteDbConfig): op is SQLiteDbConfigIntPint {
+        return (
+            op === SQLiteDbConfig.ENABLE_FKEY
+            || op === SQLiteDbConfig.ENABLE_TRIGGER
+            || op === SQLiteDbConfig.ENABLE_VIEW
+            || op === SQLiteDbConfig.ENABLE_FTS3_TOKENIZER
+            || op === SQLiteDbConfig.ENABLE_LOAD_EXTENSION
+            || op === SQLiteDbConfig.NO_CKPT_ON_CLOSE
+            || op === SQLiteDbConfig.ENABLE_QPSG
+            || op === SQLiteDbConfig.TRIGGER_EQP
+            || op === SQLiteDbConfig.RESET_DATABASE
+            || op === SQLiteDbConfig.DEFENSIVE
+            || op === SQLiteDbConfig.WRITABLE_SCHEMA
+            || op === SQLiteDbConfig.LEGACY_ALTER_TABLE
+            || op === SQLiteDbConfig.DQS_DDL
+            || op === SQLiteDbConfig.DQS_DML
+        )
+    }
 }

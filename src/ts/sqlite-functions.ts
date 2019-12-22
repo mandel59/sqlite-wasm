@@ -8,7 +8,7 @@ namespace Module {
         errmsg: ptr<sqlite3_ptr<str>> | 0
     ): SQLiteResult
     export declare function _sqlite3_free(ptr: sqlite3_ptr<any> | 0): void
-    export declare function _glue_sqlite3_db_config_int_pint(pDb: ptr<sqlite3>, op: SQLiteDbConfig.ENABLE_LOAD_EXTENSION, enable: -1 | 0 | 1, pEnabled: ptr<i32> | 0): SQLiteResult
+    export declare function _glue_sqlite3_db_config_int_pint(pDb: ptr<sqlite3>, op: SQLiteDbConfigIntPint, value: i32, pValue: ptr<i32> | 0): SQLiteResult
 
     export const sqlite3_open
         : (filename: string) => { result: SQLiteResult, pDb: ptr<sqlite3> | 0 }
@@ -82,5 +82,20 @@ namespace Module {
             sqlite3_free(pErrmsg)
             const errmsg = pErrmsg === 0 ? null : Module["UTF8ToString"](pErrmsg)
             return { result, errmsg }
+        }
+
+    export const sqlite3_db_config
+        : (pDb: ptr<sqlite3>, op: SQLiteDbConfigIntPint, value: number) => { result: SQLiteResult, value: i32 }
+        = (pDb: ptr<sqlite3>, op: SQLiteDbConfig, ...args: any[]) => {
+            if (configTypeIsIntPint(op)) {
+                const [value] = args
+                const stack = Module["stackSave"]()
+                const pValue = Module["stackAlloc"]<i32>(4)
+                const result = Module["_glue_sqlite3_db_config_int_pint"](pDb, op, value, pValue)
+                const retVal = Module["getValue"](pValue, "i32")
+                Module["stackRestore"](stack)
+                return { result, value: retVal }
+            }
+            throw RangeError("unimplemented")
         }
 }
