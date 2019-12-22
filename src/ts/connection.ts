@@ -65,15 +65,20 @@ namespace Module {
         }
 
         enableLoadExtension() {
-            return sqlite3_db_config(this.pDb, SQLiteDbConfig.ENABLE_LOAD_EXTENSION, 1)
+            const { result, value } = sqlite3_db_config(this.pDb, SQLiteDbConfig.ENABLE_LOAD_EXTENSION, 1)
+            if (result) { throw new SQLiteError(result) }
+            return value
         }
 
         disableLoadExtension() {
-            return sqlite3_db_config(this.pDb, SQLiteDbConfig.ENABLE_LOAD_EXTENSION, 0)
+            const { result, value } = sqlite3_db_config(this.pDb, SQLiteDbConfig.ENABLE_LOAD_EXTENSION, 0)
+            if (result) { throw new SQLiteError(result) }
+            return value
         }
 
         loadExtension(file: string, entry?: string) {
-            return sqlite3_load_extension(this.pDb, file, entry)
+            const { result, errmsg } = sqlite3_load_extension(this.pDb, file, entry)
+            if (result) { throw new SQLiteError(result, errmsg || undefined) }
         }
     }
 }
