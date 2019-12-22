@@ -10,9 +10,9 @@ namespace Module {
         S extends NativeJsTypeSignature ? {
             "undefined": undefined
             "boolean": boolean
-            "string": string
+            "string": string | null | undefined
             "number": number
-            "array": Int8Array | i8[]
+            "array": Int8Array | i8[] | null | undefined
         }[S]
         : never
 
