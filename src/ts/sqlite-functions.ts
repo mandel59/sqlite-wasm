@@ -13,11 +13,11 @@ namespace Module {
     export const sqlite3_open
         : (filename: string) => { result: SQLiteResult, pDb: ptr<sqlite3> | 0 }
         = (filename) => {
-            const stack = stackSave()
-            const ppDb = stackAlloc<ptr<sqlite3>>(4)
+            const stack = Module["stackSave"]()
+            const ppDb = Module["stackAlloc"]<ptr<sqlite3>>(4)
             const result = Module["ccall"]<"number", ["string", "number"]>("sqlite3_open", "number", ["string", "number"], [filename, ppDb])
-            const pDb = getValue<ptr<sqlite3>>(ppDb, "*")
-            stackRestore(stack)
+            const pDb = Module["getValue"]<ptr<sqlite3>>(ppDb, "*")
+            Module["stackRestore"](stack)
             return { result, pDb }
         }
     export const sqlite3_close_v2
@@ -30,10 +30,12 @@ namespace Module {
             callback?: (numColumns: number, columnTexts: string[], columnNames: string[]) => boolean,
         ) => { result: SQLiteResult, errmsg: string | null }
         = (pDb, sql, callback) => {
+            const UTF8ToString = Module["UTF8ToString"]
+            const getValue = Module["getValue"]
             const pCallback
                 = callback == null
                     ? 0
-                    : addFunction(
+                    : Module["addFunction"](
                         (_x: 0, numColumns: i32, pColumnTexts: ptr<arr<ptr<str>>>, pColumnNames: ptr<arr<ptr<str>>>) => {
                             const columnTexts = []
                             const columnNames = []
@@ -48,17 +50,17 @@ namespace Module {
                             return (callback(numColumns, columnTexts, columnNames) as any) | 0 as i32
                         },
                         "iiiii")
-            const stack = stackSave()
-            const ppErrmsg = stackAlloc<sqlite3_ptr<str>>(4)
+            const stack = Module["stackSave"]()
+            const ppErrmsg = Module["stackAlloc"]<sqlite3_ptr<str>>(4)
             const result = Module["ccall"]<"number", ["number", "string", "number", "number", "number"]>("sqlite3_exec", "number",
                 ["number", "string", "number", "number", "number"],
                 [pDb, sql, pCallback, 0, ppErrmsg])
             const pErrmsg = getValue<sqlite3_ptr<str>>(ppErrmsg, "*")
-            stackRestore(stack)
+            Module["stackRestore"](stack)
             const errmsg = pErrmsg === 0 ? null : UTF8ToString(pErrmsg)
             sqlite3_free(pErrmsg)
             if (pCallback !== 0) {
-                removeFunction(pCallback)
+                Module["removeFunction"](pCallback)
             }
             return { result, errmsg }
         }
@@ -68,17 +70,17 @@ namespace Module {
 
     export const sqlite3_load_extension
         = (pDb: ptr<sqlite3>, file: string, proc?: string) => {
-            const stack = stackSave()
-            const ppErrmsg = stackAlloc<sqlite3_ptr<str>>(4)
+            const stack = Module["stackSave"]()
+            const ppErrmsg = Module["stackAlloc"]<sqlite3_ptr<str>>(4)
             const result = Module["ccall"](
                 "sqlite3_load_extension",
                 "number",
                 ["number", "string", "string", "number"],
                 [pDb, file, proc, ppErrmsg]) as SQLiteResult
-            const pErrmsg = getValue<sqlite3_ptr<str>>(ppErrmsg, "*")
-            stackRestore(stack)
+            const pErrmsg = Module["getValue"]<sqlite3_ptr<str>>(ppErrmsg, "*")
+            Module["stackRestore"](stack)
             sqlite3_free(pErrmsg)
-            const errmsg = pErrmsg === 0 ? null : UTF8ToString(pErrmsg)
+            const errmsg = pErrmsg === 0 ? null : Module["UTF8ToString"](pErrmsg)
             return { result, errmsg }
         }
 }
