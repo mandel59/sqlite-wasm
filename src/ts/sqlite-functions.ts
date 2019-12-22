@@ -1,15 +1,22 @@
 namespace Module {
-    export declare function _sqlite3_open(filename: ptr<str>, ppDb: ptr<ptr<sqlite3>>): SQLiteResult
     export declare function _sqlite3_close_v2(pDb: ptr<sqlite3>): SQLiteResult
+    export const sqlite3_close_v2
+        : (pDb: ptr<sqlite3>) => SQLiteResult
+        = _sqlite3_close_v2
+
     export declare function _sqlite3_exec<T extends ptr<any>>(
         pDb: ptr<sqlite3>,
         sql: ptr<str>,
         callback: ptr<fn<(x: T | 0, numColumns: i32, columnTexts: ptr<arr<ptr<str>>>, columnNames: ptr<arr<ptr<str>>>) => i32>> | 0,
         errmsg: ptr<sqlite3_ptr<str>> | 0
     ): SQLiteResult
-    export declare function _sqlite3_free(ptr: sqlite3_ptr<any> | 0): void
-    export declare function _glue_sqlite3_db_config_int_pint(pDb: ptr<sqlite3>, op: SQLiteDbConfigIntPint, value: i32, pValue: ptr<i32> | 0): SQLiteResult
 
+    export declare function _sqlite3_free(ptr: sqlite3_ptr<any> | 0): void
+    export const sqlite3_free
+        : (ptr: sqlite3_ptr<any> | 0) => void
+        = _sqlite3_free
+
+    export declare function _sqlite3_open(filename: ptr<str>, ppDb: ptr<ptr<sqlite3>>): SQLiteResult
     export const sqlite3_open
         : (filename: string) => { result: SQLiteResult, pDb: ptr<sqlite3> | 0 }
         = (filename) => {
@@ -20,9 +27,6 @@ namespace Module {
             Module["stackRestore"](stack)
             return { result, pDb }
         }
-    export const sqlite3_close_v2
-        : (pDb: ptr<sqlite3>) => SQLiteResult
-        = Module["cwrap"]("sqlite3_close_v2", "number", ["number"])
     export const sqlite3_exec
         : (
             pDb: ptr<sqlite3>,
@@ -64,9 +68,6 @@ namespace Module {
             }
             return { result, errmsg }
         }
-    export const sqlite3_free
-        : (ptr: sqlite3_ptr<any> | 0) => void
-        = Module["cwrap"]("sqlite3_free", "undefined", ["number"])
 
     export const sqlite3_load_extension
         = (pDb: ptr<sqlite3>, file: string, proc?: string) => {
@@ -84,6 +85,7 @@ namespace Module {
             return { result, errmsg }
         }
 
+    export declare function _glue_sqlite3_db_config_int_pint(pDb: ptr<sqlite3>, op: SQLiteDbConfigIntPint, value: i32, pValue: ptr<i32> | 0): SQLiteResult
     export const sqlite3_db_config
         : (pDb: ptr<sqlite3>, op: SQLiteDbConfigIntPint, value: number) => { result: SQLiteResult, value: i32 }
         = (pDb: ptr<sqlite3>, op: SQLiteDbConfig, ...args: any[]) => {
