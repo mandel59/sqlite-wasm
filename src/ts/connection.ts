@@ -65,7 +65,21 @@ namespace Module {
         }
 
         enableLoadExtension() {
-            return Module["_sqlite3_db_config"](this.pDb, SQLiteDbConfig.ENABLE_LOAD_EXTENSION, 1, 0)
+            const stack = Module["stackSave"]()
+            const pValue = Module["stackAlloc"]<i32>(4)
+            const result = Module["_glue_sqlite3_db_config_int_pint"](this.pDb, SQLiteDbConfig.ENABLE_LOAD_EXTENSION, 1, pValue)
+            const value = Module["getValue"](pValue, "i32")
+            Module["stackRestore"](stack)
+            return { result, value }
+        }
+
+        disableLoadExtension() {
+            const stack = Module["stackSave"]()
+            const pValue = Module["stackAlloc"]<i32>(4)
+            const result = Module["_glue_sqlite3_db_config_int_pint"](this.pDb, SQLiteDbConfig.ENABLE_LOAD_EXTENSION, 0, pValue)
+            const value = Module["getValue"](pValue, "i32")
+            Module["stackRestore"](stack)
+            return { result, value }
         }
 
         loadExtension(file: string, entry?: string) {

@@ -8,7 +8,7 @@ namespace Module {
         errmsg: ptr<sqlite3_ptr<str>> | 0
     ): SQLiteResult
     export declare function _sqlite3_free(ptr: sqlite3_ptr<any> | 0): void
-    export declare function _sqlite3_db_config(pDb: ptr<sqlite3>, op: SQLiteDbConfig.ENABLE_LOAD_EXTENSION, enable: -1 | 0 | 1, pEnabled: ptr<i32> | 0): SQLiteResult
+    export declare function _glue_sqlite3_db_config_int_pint(pDb: ptr<sqlite3>, op: SQLiteDbConfig.ENABLE_LOAD_EXTENSION, enable: -1 | 0 | 1, pEnabled: ptr<i32> | 0): SQLiteResult
 
     export const sqlite3_open
         : (filename: string) => { result: SQLiteResult, pDb: ptr<sqlite3> | 0 }

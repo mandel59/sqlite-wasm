@@ -109,6 +109,10 @@ temp/bc/sqlite3.bc: deps/$(SQLITE_AMALGAMATION) src/c/config.h
 	mkdir -p temp/bc
 	$(EMCC) $(CFLAGS) -s LINKABLE=1 'deps/$(SQLITE_AMALGAMATION)/sqlite3.c' -c -o $@
 
+temp/bc/glue.bc: src/c/glue.c
+	mkdir -p temp/bc
+	$(EMCC) $(CFLAGS) -s LINKABLE=1 src/c/glue.c -c -o $@
+
 temp/bc/extension-functions.bc: deps/$(EXTENSION_FUNCTIONS)
 	mkdir -p temp/bc
 	$(EMCC) $(CFLAGS) -s LINKABLE=1 'deps/$(EXTENSION_FUNCTIONS)' -c -o $@
@@ -138,11 +142,11 @@ clean-debug:
 .PHONY: debug
 debug: debug/sqlite3.html
 
-debug/sqlite3.html: temp/bc/sqlite3.bc ext $(EXPORTED_FUNCTIONS_JSON) temp/api.js
+debug/sqlite3.html: temp/bc/sqlite3.bc temp/bc/glue.bc ext $(EXPORTED_FUNCTIONS_JSON) temp/api.js
 	mkdir -p debug
 	$(EMCC) $(EMFLAGS) $(EMFLAG_INTERFACES) $(EMFLAGS_DEBUG) \
 		--no-heap-copy --embed-file ext \
-		temp/bc/sqlite3.bc -o $@
+		temp/bc/sqlite3.bc temp/bc/glue.bc -o $@
 
 ## dist
 
@@ -153,8 +157,8 @@ clean-dist:
 .PHONY: dist
 dist: dist/sqlite3.html
 
-dist/sqlite3.html: temp/bc/sqlite3.bc ext $(EXPORTED_FUNCTIONS_JSON) temp/api.js
+dist/sqlite3.html: temp/bc/sqlite3.bc temp/bc/glue.bc ext $(EXPORTED_FUNCTIONS_JSON) temp/api.js
 	mkdir -p dist
 	$(EMCC) $(EMFLAGS) $(EMFLAG_INTERFACES) $(EMFLAGS_DIST) \
 		--no-heap-copy --embed-file ext \
-		temp/bc/sqlite3.bc -o $@
+		temp/bc/sqlite3.bc temp/bc/glue.bc -o $@
