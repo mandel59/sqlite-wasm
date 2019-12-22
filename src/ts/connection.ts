@@ -44,10 +44,21 @@ namespace Module {
         exec<T>(
             sql: string,
             callback?: ((columns: { [k in string]: string }) => T | undefined),
-        ): { result: SQLiteResult, errmsg: string | null, value: T | undefined, reason: any } {
+        ): T | undefined {
             let value: T | undefined = undefined
             let reason: any = undefined
-            const { result, errmsg } = sqlite3_exec(this.pDb, sql, callback == null ? undefined : (numColumns, columnTexts, columnNames) => {
+            let columnNames: string[] | undefined = undefined
+            function ptrToStringArray(p: ptr<arr<ptr<str>>>, length: number) {
+                const texts = []
+                for (let i: number = p; i < p + length * 4; i += 4) {
+                    const text = UTF8ToString(getValue<ptr<str>>(i as ptr<ptr<str>>, "*"))
+                    texts.push(text)
+                }
+                return texts
+            }
+            const { result, errmsg } = sqlite3_exec(this.pDb, sql, callback == null ? undefined : (numColumns, pColumnTexts, pColumnNames) => {
+                const columnTexts = ptrToStringArray(pColumnTexts, numColumns)
+                if (columnNames == null) columnNames = ptrToStringArray(pColumnNames, numColumns)
                 const record: Record<string, string> = Object.create(null)
                 for (let i = 0; i < numColumns; i++) {
                     record[columnNames[i]] = columnTexts[i]
@@ -61,7 +72,15 @@ namespace Module {
                 }
             })
 
-            return { result, errmsg, value, reason }
+            if (value !== undefined) {
+                return value
+            }
+            if (reason !== undefined) {
+                throw reason
+            }
+            if (result) {
+                throw new SQLiteError(result, errmsg || undefined)
+            }
         }
 
         enableLoadExtension() {
