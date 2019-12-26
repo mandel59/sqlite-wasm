@@ -18,6 +18,8 @@ EMCC ?= emcc
 
 TSC ?= node_modules/typescript/bin/tsc
 
+EXTENSIONS = ext/extension-functions.wasm
+
 CFLAGS = \
 	-fPIC \
 	-D_HAVE_SQLITE_CONFIG_H \
@@ -129,7 +131,7 @@ clean-ext:
 	rm -rf ext
 
 .PHONY: ext
-ext: ext/extension-functions.wasm
+ext: $(EXTENSIONS)
 
 ext/extension-functions.wasm: temp/bc/extension-functions.bc
 	mkdir -p ext
@@ -144,7 +146,7 @@ clean-debug:
 .PHONY: debug
 debug: debug/sqlite3.html
 
-debug/sqlite3.html: temp/bc/sqlite3.bc temp/bc/glue.bc ext $(EXPORTED_FUNCTIONS_JSON) temp/api.js
+debug/sqlite3.html: temp/bc/sqlite3.bc temp/bc/glue.bc $(EXTENSIONS) $(EXPORTED_FUNCTIONS_JSON) temp/api.js
 	mkdir -p debug
 	$(EMCC) $(EMFLAGS) $(EMFLAG_INTERFACES) $(EMFLAGS_DEBUG) \
 		--no-heap-copy --embed-file ext \
@@ -159,7 +161,7 @@ clean-dist:
 .PHONY: dist
 dist: dist/sqlite3.html
 
-dist/sqlite3.html: temp/bc/sqlite3.bc temp/bc/glue.bc ext $(EXPORTED_FUNCTIONS_JSON) temp/api.js
+dist/sqlite3.html: temp/bc/sqlite3.bc temp/bc/glue.bc $(EXTENSIONS) $(EXPORTED_FUNCTIONS_JSON) temp/api.js
 	mkdir -p dist
 	$(EMCC) $(EMFLAGS) $(EMFLAG_INTERFACES) $(EMFLAGS_DIST) \
 		--no-heap-copy --embed-file ext \
