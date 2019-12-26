@@ -6,7 +6,6 @@
 
 - npm
 - make
-- java (for closure compiler)
 - the latest version of emscripten
     - https://emscripten.org/docs/getting_started/downloads.html
 
