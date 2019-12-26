@@ -7,7 +7,8 @@
 - npm
 - make
 - java (for closure compiler)
-- emcc (emscripten)
+- the latest version of emscripten
+    - https://emscripten.org/docs/getting_started/downloads.html
 
 ### installed by commands
 
@@ -17,7 +18,7 @@
 ## build
 
 ```sh
-EMSCRIPTEN="/directory/path/to/emscripten" make
+make
 ```
 
 ## Related

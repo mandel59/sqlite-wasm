@@ -14,11 +14,9 @@ EXPORTED_FUNCTIONS_JSON = src/exported_functions.json
 
 # build options
 
-EMSCRIPTEN ?= /usr/bin
+EMCC ?= emcc
 
-EMCC = '$(EMSCRIPTEN)/emcc'
-
-TSC = node_modules/typescript/bin/tsc
+TSC ?= node_modules/typescript/bin/tsc
 
 CFLAGS = \
 	-fPIC \
